@@ -13,6 +13,7 @@
 
     },
     "combination_length": 4,
+    "core_number": 1,
     "file_extension": ".csv",
     "url": "bruteforce",
     "max_size": 10
