@@ -49,11 +49,11 @@ class bruteforce:
         if self.dataset_numbers:
             dataset += '0123456789'
         if self.dataset_special:
-            dataset += '!@#$%^&*()-_=+[]{}|;:",.<>?/`~'
+            dataset += '!@#$%^&*()-_=+[]\{\}|;:",.<>?/`~'
         return dataset
     
-    def combination_worker(task):
-        (part_number, dataset, length, start_index, end_index, filename, lock) = task
+    def combination_worker(self):
+        (part_number, dataset, length, start_index, end_index, filename, lock) = self.tasks
         with open(f"{filename}_part_{part_number}.csv", 'w', newline='') as f:
             writer = csv.writer(f)
             for combo in itertools.islice(itertools.product(dataset, repeat=length), start_index, end_index):
@@ -77,7 +77,6 @@ class bruteforce:
                 (i + 1) * partition_size if i < self.core_number - 1 else self.total_combinations, self.final_filename, lock) for i in
                 range(self.core_number)]
 
-        # Create worker processes for combination generation
         with multiprocessing.Pool(processes=self.core_number) as pool:
             pool.map(self.combination_worker, self.tasks)
         
