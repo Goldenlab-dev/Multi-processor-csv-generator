@@ -29,6 +29,9 @@ class bruteforce:
         
     def asker(self):
         self.is_custom = bool(input("Do you want to enter custom parameters ?"))
+        if not self.is_custom:
+            pass          
+
             
             
             
