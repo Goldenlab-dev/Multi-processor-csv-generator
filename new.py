@@ -52,8 +52,8 @@ class bruteforce:
             dataset += '!@#$%^&*()-_=+[]{}|;:",.<>?/`~'
         return dataset
     
-    def combination_worker(self):
-        (part_number, dataset, length, start_index, end_index, filename, lock) = self.task
+    def combination_worker(task):
+        (part_number, dataset, length, start_index, end_index, filename, lock) = task
         with open(f"{filename}_part_{part_number}.csv", 'w', newline='') as f:
             writer = csv.writer(f)
             for combo in itertools.islice(itertools.product(dataset, repeat=length), start_index, end_index):
@@ -69,6 +69,7 @@ class bruteforce:
                 os.remove(part_file)
                 
     def multiprocessing_starter(self):
+        start_time = time.time()
         partition_size = self.total_combinations // self.core_number
         manager = multiprocessing.Manager()
         lock = manager.Lock()
@@ -78,7 +79,28 @@ class bruteforce:
 
         # Create worker processes for combination generation
         with multiprocessing.Pool(processes=self.core_number) as pool:
-            pool.map(self.combination_worker, self.tasks)    
+            pool.map(self.combination_worker, self.tasks)
+        
+        self.concatenate_parts(self.final_filename, self.core_number, lock)
+            
+        end_time = time.time()
+        print(f"CSV generation complete in {end_time - start_time:.2f} seconds.")
+        
+        print("Verifying final file integrity...")
+        generated_combinations = 0
+        with open(self.final_filename, 'r') as f:
+            for row in csv.reader(f):
+                if len(row[0]) != self.length:
+                    print(f"Error: Incorrect combination length found - {row}")
+                generated_combinations += 1
+                
+        print(f"Total combinations expected: {self.total_combinations}, found: {generated_combinations}")
+        if generated_combinations == self.total_combinations:
+            print("All combinations generated successfully.")
+        else:
+            print("There was an error with the generated combinations.")
+
+        
     def is_custom_params(self):
         self.is_custom = bool(input("Do you want to enter custom parameters ? (y/n): ").lower()) == 'y'
         if self.is_custom:
