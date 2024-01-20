@@ -8,11 +8,12 @@ import json
 class bruteforce:
     def __init__(self):
         self.is_custom = False
+        self.final_filename = self.json_reader('final_filename')
         self.dataset = self.json_reader('full_tabs', 'tab_full')
-        self.length = self.json_reader("combination_length")
+        self.length = self.json_reader('combination_length')
         self.total_combinations = len(self.dataset) ** self.length
-        self.core_number = self.json_reader("core_number")
-        self.part_number = self.json_reader("")
+        self.core_number = self.json_reader('core_number')
+        self.partition_size = self.total_combinations // self.core_number
 
     def json_reader(self, key0='', key1='', file='params.json'):
         if len(key1) == 0 or key1 is None or key1 == '':
@@ -52,8 +53,8 @@ class bruteforce:
             dataset += '!@#$%^&*()-_=+[]\{\}|;:",.<>?/`~'
         return dataset
     
-    def combination_worker(self):
-        (part_number, dataset, length, start_index, end_index, filename, lock) = self.tasks
+    def combination_worker(task):
+        (part_number, dataset, length, start_index, end_index, filename, lock) = task
         with open(f"{filename}_part_{part_number}.csv", 'w', newline='') as f:
             writer = csv.writer(f)
             for combo in itertools.islice(itertools.product(dataset, repeat=length), start_index, end_index):
@@ -69,16 +70,17 @@ class bruteforce:
                 os.remove(part_file)
                 
     def multiprocessing_starter(self):
+        
         start_time = time.time()
-        partition_size = self.total_combinations // self.core_number
+        
         manager = multiprocessing.Manager()
         lock = manager.Lock()
-        self.tasks = [(i, self.dataset, self.length, i * partition_size,
-                (i + 1) * partition_size if i < self.core_number - 1 else self.total_combinations, self.final_filename, lock) for i in
+        tasks = [(i, self.dataset, self.length, i * self.partition_size,
+                (i + 1) * self.partition_size if i < self.core_number - 1 else self.total_combinations, self.final_filename, lock) for i in
                 range(self.core_number)]
-
+        
         with multiprocessing.Pool(processes=self.core_number) as pool:
-            pool.map(self.combination_worker, self.tasks)
+            pool.map(self.combination_worker(), tasks)
         
         self.concatenate_parts(self.final_filename, self.core_number, lock)
             
@@ -108,5 +110,3 @@ class bruteforce:
             self.combination_worker()
             
 bruteforce().is_custom_params()
-
-            
