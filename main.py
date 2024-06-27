@@ -43,7 +43,12 @@ def main():
     special = input("Include special characters? (y/n): ").lower() == 'y'
     dataset = create_dataset(lower, upper, numbers, special)
     length = int(input("Enter the desired length of combinations: "))
-    final_filename = input("Enter the final filename for the CSV (without .csv extension): ") + '.csv'
+    custom_path = input("Enter the custom path for the CSV (leave blank for project root): ")
+
+    if custom_path and not os.path.exists(custom_path):
+        os.makedirs(custom_path)
+
+    final_filename = os.path.join(custom_path or '', input("Enter the final filename for the CSV (without .csv extension): ") + '.csv')
     total_combinations = len(dataset) ** length
     print(f"Total combinations to generate: {total_combinations}")
     num_processes = int(input(f"How many processes do you want to use? (1-{multiprocessing.cpu_count()}): "))
