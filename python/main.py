@@ -14,7 +14,7 @@ def create_dataset(lower, upper, numbers, special):
     if numbers:
         dataset += '0123456789'
     if special:
-        dataset += '!@#$%^&*()-_=+[]\{\}|;:\",.<>?/`~'
+        dataset += '!@#$%^&*()-_=+[]{}|;:.<>?/`~'
     return dataset
 
 
