@@ -44,3 +44,8 @@ void createDataset(programArgs* args, dataset* data){
     };
 }
 
+char *_wgetcwd(char *path, int 256);
+
+int _mkdir(const char *dirname){
+
+}
